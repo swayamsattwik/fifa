@@ -15,14 +15,14 @@ console.log('🏁 Starting StadiaFlow AI Automated Verification Tests (ESM)...')
 
 async function run() {
   try {
-    const logicPath = path.join(__dirname, 'dist-test', 'stadiumLogic.js');
+    const logicPath = path.join(__dirname, 'dist-test', 'utils', 'stadiumLogic.js');
     if (!fs.existsSync(logicPath)) {
       console.error(`${red}Error: Compiled logic not found at ${logicPath}. Please compile TypeScript files first.${reset}`);
       process.exit(1);
     }
 
     // Dynamic import for compiled ESM module
-    const { getAIAssistantResponse, getIncidentResponsePlan, getSustainabilityOptimization } = await import('./dist-test/stadiumLogic.js');
+    const { getAIAssistantResponse, getIncidentResponsePlan, getSustainabilityOptimization } = await import('./dist-test/utils/stadiumLogic.js');
 
     let passed = 0;
     let failed = 0;
@@ -120,6 +120,19 @@ async function run() {
     assert(
       fallbackLang.reply.includes('Gate B') && fallbackLang.thinking.includes('Detected keyword'),
       'Unsupported language request defaults gracefully to English translation router.'
+    );
+    // --- Test 6: Staff Operations Mode ---
+    console.log('\n--- Test 6: Staff Operations Mode ---');
+    const staffGateResponse = getAIAssistantResponse('How is the crowd at gate B?', 'en', null, true);
+    assert(
+      staffGateResponse.reply.includes('OPERATIONAL INTEL') && staffGateResponse.reply.includes('bottleneck delta'),
+      'Staff mode gate query returns operational telemetry instead of fan-facing text.'
+    );
+
+    const staffSecurityResponse = getAIAssistantResponse('Any security incidents?', 'en', null, true);
+    assert(
+      staffSecurityResponse.reply.includes('Custodial team') && staffSecurityResponse.thinking.includes('security logs'),
+      'Staff mode security query cross-references dispatch logs.'
     );
 
     // Summary

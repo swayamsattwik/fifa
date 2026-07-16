@@ -1,16 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { Send, Mic, MicOff, Volume2, VolumeX, Sparkles, Languages, Eye } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Mic, MicOff, Volume2, VolumeX, Sparkles, Languages, Eye, ShieldAlert } from 'lucide-react';
 import { getAIAssistantResponse, UI_TEXTS, RESPONSES } from '../utils/stadiumLogic';
+import type { ScannedTicket } from '../types';
 
 interface AIAssistantProps {
   stadium: string;
-  scannedTicket: {
-    section: string;
-    row: string;
-    seat: string;
-    gate: string;
-    transitType: string;
-  } | null;
+  scannedTicket: ScannedTicket | null;
 }
 
 interface Message {
@@ -29,6 +24,7 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
   const [isThinking, setIsThinking] = useState<boolean>(false);
   const [speechSynthesisActive, setSpeechSynthesisActive] = useState<boolean>(false);
   const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
+  const [isStaffMode, setIsStaffMode] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -67,7 +63,7 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
     }
   };
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = useCallback((textToSend?: string) => {
     const query = (textToSend || inputVal).trim();
     if (!query) return;
 
@@ -86,7 +82,7 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
 
     // Simulate AI GenAI processing delay
     setTimeout(() => {
-      const response = getAIAssistantResponse(query, lang, scannedTicket);
+      const response = getAIAssistantResponse(query, lang, scannedTicket, isStaffMode);
 
       const aiMsgId = (Date.now() + 1).toString();
       const newAiMsg: Message = {
@@ -104,13 +100,13 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
         speak(response.reply.replace(/\*/g, ''));
       }
     }, 1500);
-  };
+  }, [inputVal, lang, scannedTicket, isStaffMode, speechSynthesisActive]);
 
   // Keep a ref of handleSendMessage to avoid re-initializing SpeechRecognition
   const handleSendMessageRef = useRef(handleSendMessage);
   useEffect(() => {
     handleSendMessageRef.current = handleSendMessage;
-  });
+  }, [handleSendMessage]);
 
   // Set up Speech Recognition
   useEffect(() => {
@@ -164,9 +160,9 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
   };
 
   return (
-    <div className="glass-container w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl border border-[rgba(59,130,246,0.15)] glow-blue">
+    <section aria-label="AI Assistant Chat" className="glass-container w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl border border-[rgba(59,130,246,0.15)] glow-blue">
       {/* Assistant Header */}
-      <div className="flex justify-between items-center bg-slate-900/80 px-6 py-4 border-b border-[rgba(59,130,246,0.15)] flex-wrap gap-3">
+      <header className="flex justify-between items-center bg-slate-900/80 px-6 py-4 border-b border-[rgba(59,130,246,0.15)] flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#3B82F6] to-[#10B981] flex items-center justify-center text-white font-bold">
@@ -185,9 +181,9 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
 
         {/* Controls: Voice & Language */}
         <div className="flex items-center gap-2">
-          {/* TTS Speaker Toggle */}
           <button
             onClick={toggleSpeechSynthesis}
+            aria-label={speechSynthesisActive ? "Disable Voice" : "Enable Voice"}
             className={`p-2 rounded-lg border transition-all cursor-pointer flex items-center gap-1 ${
               speechSynthesisActive 
                 ? 'bg-[rgba(16,185,129,0.1)] text-[#10B981] border-[rgba(16,185,129,0.3)] glow-green' 
@@ -197,6 +193,21 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
           >
             {speechSynthesisActive ? <Volume2 size={16} /> : <VolumeX size={16} />}
             <span className="text-xs hidden sm:inline">Voice</span>
+          </button>
+
+          {/* Staff Mode Toggle */}
+          <button
+            onClick={() => setIsStaffMode(!isStaffMode)}
+            aria-label="Toggle Staff Operations Mode"
+            className={`p-2 rounded-lg border transition-all cursor-pointer flex items-center gap-1 ${
+              isStaffMode 
+                ? 'bg-[rgba(239,68,68,0.1)] text-[#EF4444] border-[rgba(239,68,68,0.3)]' 
+                : 'bg-slate-800 text-[#9CA3AF] border-slate-700 hover:text-white'
+            }`}
+            title="Toggle Staff Operations Mode"
+          >
+            <ShieldAlert size={16} />
+            <span className="text-xs hidden sm:inline">{isStaffMode ? 'Staff Mode' : 'Fan Mode'}</span>
           </button>
 
           {/* Language Selector */}
@@ -214,10 +225,10 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
             </select>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Messages Feed */}
-      <div className="chat-container">
+      <div className="chat-container" aria-live="polite" aria-atomic="false">
         <div className="chat-messages">
           {messages.map((msg) => (
             <div key={msg.id} className="flex flex-col gap-1 w-full">
@@ -321,14 +332,14 @@ export default function AIAssistant({ stadium, scannedTicket }: AIAssistantProps
           />
           <button
             onClick={() => handleSendMessage()}
-            className="btn-primary p-3 rounded-lg flex items-center justify-center cursor-pointer"
-            disabled={isThinking || !inputVal.trim()}
-            aria-label="Send message"
+            disabled={!inputVal.trim() || isThinking}
+            aria-label="Send Message"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white disabled:opacity-50 transition-opacity cursor-pointer hover:shadow-lg"
           >
             <Send size={18} />
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

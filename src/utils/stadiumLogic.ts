@@ -1,12 +1,6 @@
 // StadiaFlow AI Core Logic Utilities
+import type { ScannedTicket } from '../types';
 
-export interface ScannedTicket {
-  section: string;
-  row: string;
-  seat: string;
-  gate: string;
-  transitType: string;
-}
 export interface Incident {
   id: string;
   title: string;
@@ -177,9 +171,36 @@ export const RESPONSES: Record<string, Record<string, { reply: string; thinking:
   }
 };
 
-// Route user queries to specific answers
-export function getAIAssistantResponse(query: string, lang: string, scannedTicket: ScannedTicket | null) {
+/**
+ * Generates an AI response based on user queries, localization, and user context.
+ * 
+ * @param {string} query - The raw input query from the user (fan or staff).
+ * @param {string} lang - The locale language code (e.g., 'en', 'es', 'fr', 'pt').
+ * @param {ScannedTicket | null} scannedTicket - Contextual ticket data for personalization.
+ * @param {boolean} isStaffMode - If true, the assistant provides operational and telemetry data instead of fan responses.
+ * @returns {{ reply: string; thinking: string }} The localized AI response and internal reasoning.
+ */
+export function getAIAssistantResponse(query: string, lang: string, scannedTicket: ScannedTicket | null, isStaffMode: boolean = false) {
   const lowerQuery = query.toLowerCase();
+  
+  if (isStaffMode) {
+    if (lowerQuery.includes('gate') || lowerQuery.includes('crowd')) {
+      return {
+        reply: "OPERATIONAL INTEL: Gate B is currently at 87% capacity with a bottleneck delta of +12%. Recommendation: Deploy 2 standby stewards from Zone C and active digital signage rerouting to Gate A.",
+        thinking: "[STAFF MODE] Analyzed live telemetry from Gate sensors. Identified load imbalance."
+      };
+    } else if (lowerQuery.includes('incident') || lowerQuery.includes('security')) {
+      return {
+        reply: "OPERATIONAL INTEL: No critical incidents. Minor slip hazard reported near Section 112. Custodial team 4 is responding (ETA 2 mins). All entry points secure.",
+        thinking: "[STAFF MODE] Cross-referenced security logs and maintenance dispatch."
+      };
+    }
+    return {
+      reply: "STAFF MODE ACTIVE. I am connected to live stadium telemetry. Ask for crowd flow analysis, incident reports, or staff deployment recommendations.",
+      thinking: "[STAFF MODE] Default staff prompt. Awaiting specific operational query."
+    };
+  }
+
   let matchKey = 'default';
   const responses = RESPONSES[lang] || RESPONSES['en'];
 
@@ -247,6 +268,12 @@ export const GENAI_INCIDENT_RESPONSES: Record<string, { thought: string; actionP
   }
 };
 
+/**
+ * Generates an automated, step-by-step incident response plan using GenAI heuristics.
+ * 
+ * @param {string} category - The type of incident (e.g., 'Crowd Flow', 'Facility Accessibility').
+ * @returns {IncidentPlan} The thought process, action plan, and broadcast text.
+ */
 export function getIncidentResponsePlan(category: string) {
   return GENAI_INCIDENT_RESPONSES[category] || {
     thought: "General operations log received. Scanning parameters against FIFA Matchday safety protocols. Hazard rating low. Containment checklist active.",
@@ -259,6 +286,12 @@ export function getIncidentResponsePlan(category: string) {
   };
 }
 
+/**
+ * Calculates optimal distribution of surplus organic waste for sustainability initiatives.
+ * 
+ * @param {number} surplusQty - The quantity of surplus food in lbs/meals.
+ * @returns {SustainabilityImpact} The distribution array and the impact summary text.
+ */
 export function getSustainabilityOptimization(surplusQty: number) {
   return {
     donations: [
