@@ -12,13 +12,6 @@ export default defineConfig({
         drop_console: true,
         drop_debugger: true
       }
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'lucide-react']
-        }
-      }
     }
   }
 })
