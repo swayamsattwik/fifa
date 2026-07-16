@@ -68,3 +68,4 @@ npm run build
 * **Secure AI Processing**: Implements word-boundary matching inside the AI routing logic to guarantee safety and avoid keyword collision.
 * **TypeScript Integrity**: Type-only imports used alongside strict type verification (`tsc -b`).
 * **Accessibility**: Screen-reader voice narration, explicit ARIA tags, color contrasts conforming to WCAG, and custom keyboard styles.
+# fifa
