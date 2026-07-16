@@ -155,8 +155,16 @@ export default function WayfinderMap({ stadium, prefilledSection, gate: _gate }:
             {CONCESSIONS.map((con) => (
               <div
                 key={con.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSelectConcession(con)}
-                className={`p-3 rounded-lg border transition-all cursor-pointer flex justify-between items-center ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelectConcession(con);
+                  }
+                }}
+                className={`p-3 rounded-lg border transition-all cursor-pointer flex justify-between items-center focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] ${
                   selectedConcession === con.id
                     ? 'bg-[#10B981]/10 border-[#10B981] glow-green'
                     : 'bg-slate-950/20 border-slate-800 hover:border-slate-700'
@@ -213,6 +221,9 @@ export default function WayfinderMap({ stadium, prefilledSection, gate: _gate }:
                 return (
                   <g 
                     key={secKey}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Section ${secKey}`}
                     onMouseEnter={() => setHoveredSection(secKey)}
                     onMouseLeave={() => setHoveredSection(null)}
                     onClick={() => {
@@ -220,7 +231,15 @@ export default function WayfinderMap({ stadium, prefilledSection, gate: _gate }:
                       setSelectedConcession(null);
                       setDirectionPath(sec.path);
                     }}
-                    className="cursor-pointer"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedSection(secKey);
+                        setSelectedConcession(null);
+                        setDirectionPath(sec.path);
+                      }
+                    }}
+                    className="cursor-pointer focus:outline-none"
                   >
                     <circle
                       cx={sec.cx}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Leaf, Award, Recycle, Sparkles, Truck, Check } from 'lucide-react';
+import { getSustainabilityOptimization } from '../utils/stadiumLogic';
 
 interface FoodLog {
   vendor: string;
@@ -22,13 +23,13 @@ export default function SustainabilityHub() {
     setOptimizing(true);
     setTimeout(() => {
       setOptimizing(false);
+      const totalQty = SURPLUS_LOGS.reduce((sum, item) => sum + item.qty, 0);
+      const opt = getSustainabilityOptimization(totalQty);
+      
       setOptimizedResult({
         thought: "Analyzing organic shelf-life matrices. Temperature is 22°C; hot dogs and buns must be transported in insulated cooling bins. Shelter database indicates Rutherford Family Haven (2.1 miles away) has a vacancy for 120 meals, and Community Table (4.5 miles) has a vacancy for 150 meals. Scheduling collection van route...",
-        donations: [
-          { shelter: 'Rutherford Family Haven', qty: 117, items: 'Beef Buns & Pretzels', eta: '18 mins' },
-          { shelter: 'Community Table', qty: 30, items: 'Gluten-free tortillas', eta: '32 mins' }
-        ],
-        impact: "Saves 147 lbs of carbon equivalent emissions; redirects 147 meals to families in need."
+        donations: opt.donations,
+        impact: opt.impact
       });
     }, 1500);
   };

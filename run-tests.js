@@ -102,6 +102,26 @@ async function run() {
       'Carbon conservation metrics count and summarize impact correctly.'
     );
 
+    // --- Test 5: Extended Multilingual Routing ---
+    console.log('\n--- Test 5: Extended Multilingual Routing ---');
+    const wheelchairFr = getAIAssistantResponse('fauteuil roulant', 'fr', null);
+    assert(
+      wheelchairFr.reply.includes('fauteuil roulant') && wheelchairFr.thinking.includes('accessibilité'),
+      'French wheelchair query routes correctly to French accessibility instructions.'
+    );
+
+    const transitPt = getAIAssistantResponse('trem ou metrô', 'pt', null);
+    assert(
+      transitPt.reply.includes('metrô') && transitPt.thinking.includes('transporte'),
+      'Portuguese transit query routes correctly to Portuguese transit instructions.'
+    );
+
+    const fallbackLang = getAIAssistantResponse('Where is Gate B?', 'unsupported_lang', null);
+    assert(
+      fallbackLang.reply.includes('Gate B') && fallbackLang.thinking.includes('Detected keyword'),
+      'Unsupported language request defaults gracefully to English translation router.'
+    );
+
     // Summary
     console.log(`\n📊 Verification Summary: ${passed} passed, ${failed} failed`);
 

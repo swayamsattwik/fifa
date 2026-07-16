@@ -122,6 +122,58 @@ export const RESPONSES: Record<string, Record<string, { reply: string; thinking:
       reply: "El Shuttle Express del Mundial sale de la Zona 2 (Acceso C) cada 8 min. La estação do metro está a 6 min a pé por el paso peatonal elevado. Taxis y Uber están en el Lote E.",
       thinking: "Buscando dados de transporte y tempos de deslocação."
     }
+  },
+  fr: {
+    "default": {
+      reply: "Je suis votre assistant FIFA 2026. Je peux vous aider à localiser votre siège, les points de restauration, l'état des files d'attente et les transports. Essayez de demander : 'Où est la Porte B ?' ou 'Options sans gluten'.",
+      thinking: "Aucun mot-clé spécifique détecté. Affichage de la réponse par défaut."
+    },
+    "gate": {
+      reply: "Porte A (Nord) : 5 minutes d'attente. Porte B (Est) : 12 minutes (fréquentation moyenne). Porte C (Sud) : fluide. Nous vous conseillons de privilégier les files rapides à droite de la Porte B.",
+      thinking: "Mot-clé 'porte' ou 'entrée' détecté. Traitement des flux de foule par secteur."
+    },
+    "bathroom": {
+      reply: "Les toilettes les plus proches se situent derrière la Section 108 (Hommes/Femmes) et la Section 114 (Accessibilité & Mixte). Section 108 : 2 min d'attente ; Section 114 : libre.",
+      thinking: "Filtrage des blocs sanitaires par rapport à la Section 108."
+    },
+    "food": {
+      reply: "Outils de restauration à proximité : 'Kickoff Tacos' (Section 112, sans gluten, 4 min d'attente) et 'Stadium Grill' (Section 105, Halal, 8 min d'attente). Le kiosque express Porte B est sans attente.",
+      thinking: "Requête alimentaire détectée. Analyse des fiches de menus."
+    },
+    "wheelchair": {
+      reply: "Pour les personnes en fauteuil roulant, empruntez les ascenseurs situés aux Portes A et C. Des rampes d'accès doux sont disponibles à côté des sections 105 et 122. Des stewards sont sur place.",
+      thinking: "Requête d'accessibilité. Recherche d'ascenseurs et de rampes."
+    },
+    "transit": {
+      reply: "La navette express du Mondial part de la Zone 2 (Porte C) toutes les 8 minutes. Le métro est à 6 minutes de marche par la passerelle piétonne. Zone de covoiturage au Parking E.",
+      thinking: "Requête sur les transports. Calcul des temps de marche et fréquences."
+    }
+  },
+  pt: {
+    "default": {
+      reply: "Olá! Sou seu Assistente FIFA 2026. Posso ajudar a encontrar seu assento, banheiros, alimentação e opções de transporte. Pergunte: 'Onde fica o Portão B?', 'Comida sem glúten' ou 'Horário dos trenes'.",
+      thinking: "Nenhum padrão identificado. Mostrando instruções gerais."
+    },
+    "gate": {
+      reply: "Para entrada rápida: Portão A (Norte) tem 5 min de espera; Portão B (Leste) tem 12 min (movimentado); Portão C (Sul) está livre. Recomendamos as filas expressas à direita no Portão B.",
+      thinking: "Detecção de termos de entrada/portões. Análise das filas operacionais."
+    },
+    "bathroom": {
+      reply: "Os banheiros mais próximos estão atrás da Seção 108 (Masculino e Feminino) e Seção 114 (Unissex e Acessível). Seção 108 tem 2 min de fila, Seção 114 livre.",
+      thinking: "Mapeamento de banheiros próximos à Seção 108."
+    },
+    "food": {
+      reply: "Temos 'Kickoff Tacos' atrás da Seção 112 (opções sem glúten, 4 min de fila) e 'Stadium Grill' atrás da Seção 105 (cardápio Halal, 8 min de fila). Quiosque expresso no Portão B está livre.",
+      thinking: "Análise de opções gastronômicas."
+    },
+    "wheelchair": {
+      reply: "Rotas acessíveis disponíveis: Utilize os elevadores nos Portões A ou C. Rampas com inclinação suave estão próximas às seções 105 e 122. Nossos voluntários estão prontos para ajudar.",
+      thinking: "Acessibilidade requerida. Mapeamento de rampas e elevadores."
+    },
+    "transit": {
+      reply: "O ônibus express departa da Zona 2 (fora do Portão C) a cada 8 min. O metrô fica a 6 min de caminhada pela passarela. Uber e táxis estão localizados no Estacionamento E.",
+      thinking: "Rotas de transporte ativo."
+    }
   }
 };
 
@@ -142,13 +194,13 @@ export function getAIAssistantResponse(query: string, lang: string, scannedTicke
 
   if (matches(['gate', 'enter', 'entrance', 'acceso', 'portão', 'porte'])) {
     matchKey = 'gate';
-  } else if (matches(['bathroom', 'restroom', 'toilet', 'baño', 'wc', 'banheiro'])) {
+  } else if (matches(['bathroom', 'restroom', 'toilet', 'baño', 'wc', 'banheiro', 'toilettes'])) {
     matchKey = 'bathroom';
   } else if (matches(['food', 'eat', 'gluten', 'comida', 'alimento', 'nourriture'])) {
     matchKey = 'food';
-  } else if (matches(['wheelchair', 'access', 'handicap', 'rampa', 'silla', 'cadeira'])) {
+  } else if (matches(['wheelchair', 'access', 'handicap', 'rampa', 'silla', 'cadeira', 'fauteuil'])) {
     matchKey = 'wheelchair';
-  } else if (matches(['transit', 'bus', 'metro', 'train', 'shuttle', 'uber', 'transporte', 'tren', 'trem'])) {
+  } else if (matches(['transit', 'bus', 'metro', 'train', 'shuttle', 'uber', 'transporte', 'tren', 'trem', 'navette'])) {
     matchKey = 'transit';
   }
 

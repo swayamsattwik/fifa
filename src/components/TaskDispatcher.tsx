@@ -79,8 +79,16 @@ export default function TaskDispatcher({ volunteers, incidents, onAssign }: Task
             {volunteers.map((vol) => (
               <div
                 key={vol.id}
+                role="button"
+                tabIndex={vol.status === 'idle' ? 0 : -1}
                 onClick={() => vol.status === 'idle' && setSelectedVolId(vol.id)}
-                className={`p-3 rounded-lg border transition-all flex justify-between items-center ${
+                onKeyDown={(e) => {
+                  if (vol.status === 'idle' && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    setSelectedVolId(vol.id);
+                  }
+                }}
+                className={`p-3 rounded-lg border transition-all flex justify-between items-center focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] ${
                   vol.status === 'busy' ? 'opacity-50 border-slate-900 bg-slate-950/20'
                     : selectedVolId === vol.id ? 'bg-[#3B82F6]/15 border-[#3B82F6] glow-blue'
                     : 'bg-slate-950/10 border-slate-800 hover:border-slate-700 cursor-pointer'

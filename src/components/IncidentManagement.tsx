@@ -1,53 +1,12 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useState, type FormEvent, type Dispatch, type SetStateAction } from 'react';
 import { ShieldAlert, Zap, CheckCircle, PlusCircle, Volume2, Sparkles, MessageSquare } from 'lucide-react';
 import type { Incident, Volunteer } from '../utils/stadiumLogic';
-
-interface IncidentManagementProps {
+import { getIncidentResponsePlan } from '../utils/stadiumLogic';interface IncidentManagementProps {
   incidents: Incident[];
   volunteers: Volunteer[];
   onResolve: (id: string) => void;
   onUpdateIncidents: Dispatch<SetStateAction<Incident[]>>;
 }
-
-// Preset GenAI responses for different incident types
-const GENAI_INCIDENT_RESPONSES: Record<string, { thought: string; actionPlan: string[]; broadcastText: string }> = {
-  'Crowd Flow': {
-    thought: "Gate B sensor reports 87% entrance occupancy. Bottleneck is causing line sprawl of 45 meters. Recommendation: Activate standby ticket-scanning marshals, open side accessibility lanes for general pass-through, and broadcast pedestrian detour routes.",
-    actionPlan: [
-      "Deploy 2 standby safety stewards to Gate B lane entrances to direct fans to express checkpoints.",
-      "Open Gate C (South Side) auxiliary gates to offload 20% of inbound pedestrian traffic.",
-      "Update digital street signage within 500 meters to advise incoming fans to detour away from Gate B."
-    ],
-    broadcastText: "⚠️ WORLD CUP ALERTS: Gate B is currently busy. For faster entry, please head to Gate A (North) or Gate C (South). Gates A & C wait times are under 4 minutes."
-  },
-  'Facility Accessibility': {
-    thought: "Elevator 3 technical halt detected. This impacts step-free access for Sections 104-108. Standard Operating Procedure (SOP) 12: Redirect disabled/wheelchair guests to Elevator 4 (40 meters away) and dispatch safety crews.",
-    actionPlan: [
-      "Dispatch mechanical crew to reset Elevator 3 breaker control board.",
-      "Re-route Marta Gomez (Accessibility Marshal) to Section 106 to escort guests requiring wheelchair support to Elevator 4.",
-      "Display temporary elevator detour arrow indicator signals on concourse digital displays."
-    ],
-    broadcastText: "📢 ACCESSIBILITY ALERTS: Elevator 3 is temporarily out of service. Please use Elevator 4 near Section 109. Accessibility marshals are on site to assist you."
-  },
-  'Lost & Found': {
-    thought: "Missing child reported. Age: 6, wearing official USA team jersey. SOP 9: Lock down immediate sector exits (Sec 114-116), alert all local stewards, check gate camera recordings, and broadcast description discreetly.",
-    actionPlan: [
-      "Broadcast child description to all active volunteer and staff handheld devices in Zone C.",
-      "Station marshal at Exit Gate D to monitor outbound pedestrians.",
-      "Coordinate with stadium CCTV operations to run facial detection scan on Sections 112 to 118 cameras."
-    ],
-    broadcastText: "⚽ INFO DESK: Assistance required in Section 115. Staff are looking for a lost child. If you see a boy wearing a USA jersey, please contact the nearest stadium steward."
-  },
-  'General': {
-    thought: "General operations log received. Scanning parameters against FIFA Matchday safety protocols. Hazard rating low. Containment checklist active.",
-    actionPlan: [
-      "Notify nearby zone supervisors of the reported condition.",
-      "Inspect the location for physical debris or blockages.",
-      "Verify safety standards are restored within 15 minutes."
-    ],
-    broadcastText: "🔔 NOTICE: Stadium staff are addressing an operational item. No action is required from spectators."
-  }
-};
 
 export default function IncidentManagement({ incidents, volunteers: _volunteers, onResolve, onUpdateIncidents }: IncidentManagementProps) {
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
@@ -64,8 +23,8 @@ export default function IncidentManagement({ incidents, volunteers: _volunteers,
     onUpdateIncidents(prev => prev.map(inc => inc.id === id ? { ...inc, status: 'generating' } : inc));
 
     setTimeout(() => {
-      // Fetch preset response or use fallback
-      const response = GENAI_INCIDENT_RESPONSES[category] || GENAI_INCIDENT_RESPONSES['General'];
+      // Fetch preset response
+      const response = getIncidentResponsePlan(category);
 
       onUpdateIncidents(prev => prev.map(inc => inc.id === id ? { 
         ...inc, 
@@ -77,7 +36,7 @@ export default function IncidentManagement({ incidents, volunteers: _volunteers,
     }, 1200);
   };
 
-  const handleAddIncident = (e: React.FormEvent) => {
+  const handleAddIncident = (e: FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newLoc.trim()) return;
 
